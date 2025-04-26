@@ -6,6 +6,11 @@ import { useNavigate } from "react-router-dom";
 const HeroSection = () => {
   const navigate = useNavigate();
   
+  const handleBrowsePosts = () => {
+    console.log("Navigating to blogs page");
+    navigate("/blogs");
+  };
+  
   return (
     <div className="relative bg-gradient-to-r from-blue-600 to-indigo-700 overflow-hidden">
       <div className="absolute inset-0">
@@ -42,7 +47,7 @@ const HeroSection = () => {
               size="lg" 
               variant="outline" 
               className="border-2 border-white text-white hover:bg-white/10"
-              onClick={() => navigate("/blogs")}
+              onClick={handleBrowsePosts}
             >
               Browse Posts
             </Button>
@@ -54,3 +59,4 @@ const HeroSection = () => {
 };
 
 export default HeroSection;
+

@@ -46,17 +46,17 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">Connect</h3>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-gray-300 hover:text-white transition-colors">
+                <a href="#" onClick={(e) => e.preventDefault()} className="text-gray-300 hover:text-white transition-colors">
                   GitHub
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-300 hover:text-white transition-colors">
+                <a href="#" onClick={(e) => e.preventDefault()} className="text-gray-300 hover:text-white transition-colors">
                   Twitter
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-300 hover:text-white transition-colors">
+                <a href="#" onClick={(e) => e.preventDefault()} className="text-gray-300 hover:text-white transition-colors">
                   LinkedIn
                 </a>
               </li>

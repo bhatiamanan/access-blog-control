@@ -1,73 +1,105 @@
-# Welcome to your Lovable project
 
-## Project info
+# Role-Based Access Control (RBAC) Blog Platform
 
-**URL**: https://lovable.dev/projects/59fdf564-6b1b-4133-88c4-e790d3cb9b87
+This project implements a secure blog platform with role-based access control (RBAC), allowing different permissions for admin and regular user roles.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- **Authentication with JWT**: Secure login and registration
+- **Role-Based Access Control**: Different permissions for admins and users
+- **Blog Management**: Create, read, update, delete functionality for blog posts
+- **User Management**: Admin dashboard for managing users and their roles
+- **Responsive Design**: Works on mobile, tablet, and desktop
 
-**Use Lovable**
+## Architecture
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/59fdf564-6b1b-4133-88c4-e790d3cb9b87) and start prompting.
+This is a full-stack application with:
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Frontend**: React with TypeScript and Tailwind CSS (shadcn/ui components)
+- **Backend**: NestJS (mock implementation for this project)
+- **Database**: MongoDB (mock implementation for this project)
 
-**Use your preferred IDE**
+## Project Structure
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+```
+├── src/
+│   ├── components/     # React components
+│   │   ├── admin/      # Admin-specific components
+│   │   ├── layouts/    # Layout components
+│   │   └── ui/         # UI components
+│   ├── hooks/          # Custom React hooks
+│   ├── lib/            # Utility functions and dummy data
+│   └── pages/          # Page components
+│       ├── admin/      # Admin pages
+│       ├── auth/       # Authentication pages
+│       ├── blogs/      # Blog-related pages
+│       └── user/       # User-specific pages
+```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Running Locally
 
-Follow these steps:
+Follow these steps to run the application on your local machine:
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Clone the repository
+git clone <repository-url>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Navigate to the project directory
+cd rbac-blog-platform
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## User Roles and Permissions
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Admin
+- View all blog posts
+- Create new blog posts
+- Edit any blog post
+- Delete any blog post
+- Manage users (change roles, delete users)
+- Access admin dashboard
 
-**Use GitHub Codespaces**
+### Regular User
+- View all blog posts
+- View their own profile
+- Edit their own profile
+- Cannot access admin features
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Demo Credentials
 
-## What technologies are used for this project?
+For testing purposes, you can use these demo accounts:
 
-This project is built with:
+**Admin User:**
+- Email: admin@example.com
+- Password: admin123
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+**Regular User:**
+- Email: user@example.com
+- Password: user123
 
-## How can I deploy this project?
+## Backend Implementation Notes
 
-Simply open [Lovable](https://lovable.dev/projects/59fdf564-6b1b-4133-88c4-e790d3cb9b87) and click on Share -> Publish.
+This project includes a mock backend implementation for demonstration purposes. In a production environment, you would:
 
-## Can I connect a custom domain to my Lovable project?
+1. Set up a real NestJS backend with MongoDB
+2. Implement proper JWT authentication with token refresh
+3. Create proper database models and schemas
+4. Set up proper API endpoints with role-based middleware
+5. Implement proper error handling and validation
 
-Yes, you can!
+## Security Considerations
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+In a production environment, additional security measures would include:
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+- HTTPS for all API communications
+- Proper password hashing (bcrypt)
+- Rate limiting for login attempts
+- CSRF protection
+- XSS protection
+- Input validation on all forms
+- Secure HTTP headers

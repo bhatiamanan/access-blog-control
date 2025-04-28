@@ -1,10 +1,10 @@
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
-import MainLayout from "@/components/layouts/MainLayout";
-import { toast } from "@/components/ui/use-toast";
-import { checkPermission } from "@/lib/RBACUtils";
+import { useAuth } from "../../hooks/useAuth";
+import MainLayout from "../../components/layouts/MainLayout";
+import { toast } from "../../components/ui/use-toast";
+import { checkPermission } from "../../lib/RBACUtils";
 
 interface AdminLayoutProps {
   children: React.ReactNode;

@@ -1,18 +1,18 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "../../components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
+import { Textarea } from "../../components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 import { ArrowLeft, Save } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/ui/use-toast";
-import AdminLayout from "@/components/layouts/AdminLayout";
-import { useAuth } from "@/hooks/useAuth";
-import { blogService } from "@/lib/blogService";
+import { toast } from "../../components/ui/use-toast";
+import AdminLayout from "../../components/layouts/AdminLayout";
+import { useAuth } from "../../hooks/useAuth";
+import { blogService } from "../../lib/blogService";
 
 interface PostFormData {
   title: string;

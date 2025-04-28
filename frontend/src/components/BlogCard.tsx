@@ -1,7 +1,7 @@
 
 import React from "react";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardFooter, CardHeader } from "../components/ui/card";
+import { Badge } from "../components/ui/badge";
 import { Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 

@@ -1,9 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "@/components/ui/use-toast";
-// Uncomment these lines to use Supabase
-import { supabase } from "@/lib/supabase"; 
-import { User } from "@/lib/supabase"; // Import the User type from our supabase.ts
+import { toast } from "../components/ui/use-toast";
+import axios from "axios"; // Add axios for API calls
+import { API_URL } from "../config";
+
+// Define User type locally
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: "admin" | "user";
+}
 
 interface AuthContextType {
   user: User | null;
@@ -21,112 +28,78 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
-  // Use Supabase auth state listener
+  // Check for stored token and fetch user on mount
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setIsLoading(true);
-        
-        if (event === 'SIGNED_IN' && session) {
-          // Get user profile from Supabase
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-            
-          if (data) {
-            // Profile exists, set user state
-            setUser(data as User);
-          } else if (!error || error.code === 'PGRST116') {
-            // Profile doesn't exist, create one
-            const newUser: Omit<User, 'created_at'> = {
-              id: session.user.id,
-              email: session.user.email || '',
-              name: session.user.email?.split('@')[0] || '',
-              role: 'user',
-            };
-            
-            await supabase.from('profiles').insert([newUser]);
-            
-            // Set user with created_at timestamp
-            setUser({
-              ...newUser,
-              created_at: new Date().toISOString(),
-            } as User);
+    const checkUser = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        // Get user profile from backend
+        const response = await axios.get(`${API_URL}/auth/profile`, {
+          headers: {
+            Authorization: `Bearer ${token}`
           }
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null);
-        }
-        
+        });
+
+        const userData = response.data;
+        setUser({
+          id: userData._id,
+          name: userData.name,
+          email: userData.email,
+          role: userData.role
+        });
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+        localStorage.removeItem("token");
+      } finally {
         setIsLoading(false);
       }
-    );
-
-    // Check for existing session
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session) {
-        // Get user profile from Supabase
-        const { data } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-          
-        if (data) {
-          setUser(data as User);
-        }
-      }
-      
-      setIsLoading(false);
     };
-    
+
     checkUser();
-
-    return () => {
-      subscription.unsubscribe();
-    };
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
       
-      // Sign in with Supabase
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // Sign in with backend API
+      const response = await axios.post(`${API_URL}/auth/login`, {
         email,
-        password,
+        password
       });
       
-      if (error) throw error;
-
-      if (data.user) {
-        // Get user profile
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', data.user.id)
-          .single();
-          
-        if (profile) {
-          toast({
-            title: "Login successful",
-            description: `Welcome back, ${profile.name}!`,
-          });
-          
-          if (profile.role === "admin") {
-            navigate("/admin/dashboard");
-          } else {
-            navigate("/blogs");
-          }
-        }
+      const { token, user: userData } = response.data;
+      
+      // Store token
+      localStorage.setItem("token", token);
+      
+      // Set user state
+      setUser({
+        id: userData._id || userData.id,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role
+      });
+      
+      toast({
+        title: "Login successful",
+        description: `Welcome back, ${userData.name}!`,
+      });
+      
+      if (userData.role === "admin") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/blogs");
       }
     } catch (error: any) {
       toast({
         title: "Login failed",
-        description: error.message || "Invalid email or password",
+        description: error.response?.data?.message || "Invalid email or password",
         variant: "destructive",
       });
     } finally {
@@ -138,40 +111,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setIsLoading(true);
       
-      // Sign up with Supabase
-      const { data, error } = await supabase.auth.signUp({
+      // Sign up with backend API
+      const response = await axios.post(`${API_URL}/auth/register`, {
+        name,
         email,
-        password,
+        password
       });
       
-      if (error) throw error;
+      const { token, user: userData } = response.data;
       
-      if (data.user) {
-        // Create user profile
-        const newUser = {
-          id: data.user.id,
-          email: email,
-          name: name,
-          role: 'user' as const,
-        };
-        
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([newUser]);
-          
-        if (profileError) throw profileError;
-        
-        toast({
-          title: "Account created successfully!",
-          description: "Please check your email to verify your account.",
-        });
-        
-        navigate("/");
-      }
+      // Store token
+      localStorage.setItem("token", token);
+      
+      // Set user state
+      setUser({
+        id: userData._id || userData.id,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role
+      });
+      
+      toast({
+        title: "Account created successfully!",
+        description: "Your account has been created and you are now logged in.",
+      });
+      
+      navigate("/blogs");
     } catch (error: any) {
       toast({
         title: "Failed to create account",
-        description: error.message || "An error occurred during signup",
+        description: error.response?.data?.message || "An error occurred during signup",
         variant: "destructive"
       });
     } finally {
@@ -181,11 +150,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      // Sign out with Supabase
-      const { error } = await supabase.auth.signOut();
+      // Remove token
+      localStorage.removeItem("token");
       
-      if (error) throw error;
-      
+      // Clear user state
       setUser(null);
       
       toast({
@@ -197,7 +165,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error: any) {
       toast({
         title: "Logout error",
-        description: error.message || "Something went wrong during logout.",
+        description: "Something went wrong during logout.",
         variant: "destructive",
       });
     }

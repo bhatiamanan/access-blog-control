@@ -1,22 +1,21 @@
-
-import { supabase } from './supabase';
-import { toast } from '@/components/ui/use-toast';
+import axios from 'axios';
+import { toast } from '../components/ui/use-toast';
+import { API_URL } from '../config';
 
 export const RBACUtils = {
   // Check if user has admin role
   async isUserAdmin(userId: string): Promise<boolean> {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', userId)
-        .single();
+      const token = localStorage.getItem('token');
+      if (!token) return false;
       
-      if (error || !data) {
-        return false;
-      }
+      const response = await axios.get(`${API_URL}/auth/check-role`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       
-      return data.role === 'admin';
+      return response.data.isAdmin === true;
     } catch (error) {
       console.error('Error checking admin status:', error);
       return false;
@@ -26,22 +25,16 @@ export const RBACUtils = {
   // Verify user can edit a post (admin can edit any, users can only edit their own)
   async canEditPost(userId: string, postId: string): Promise<boolean> {
     try {
-      // Check if user is admin
-      const isAdmin = await this.isUserAdmin(userId);
-      if (isAdmin) return true;
+      const token = localStorage.getItem('token');
+      if (!token) return false;
       
-      // If not admin, check if post belongs to user
-      const { data, error } = await supabase
-        .from('posts')
-        .select('author_id')
-        .eq('id', postId)
-        .single();
+      const response = await axios.get(`${API_URL}/posts/${postId}/can-edit`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       
-      if (error || !data) {
-        return false;
-      }
-      
-      return data.author_id === userId;
+      return response.data.canEdit === true;
     } catch (error) {
       console.error('Error checking edit permission:', error);
       return false;

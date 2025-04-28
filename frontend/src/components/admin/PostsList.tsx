@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "../../components/ui/button";
 import {
   Table,
   TableBody,
@@ -8,13 +8,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+} from "../../components/ui/table";
+import { Badge } from "../../components/ui/badge";
 import { Edit, Trash2, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "@/components/ui/use-toast";
-import { blogService } from "@/lib/blogService";
-import { Post } from "@/lib/supabase";
+import { blogService } from "../../lib/blogService";
 import { format } from "date-fns";
 
 const PostsList = () => {

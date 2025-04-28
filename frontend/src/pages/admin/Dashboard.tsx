@@ -1,14 +1,14 @@
 
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "../../components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
 import { Plus, Users, BookOpen, Settings } from "lucide-react";
-import AdminLayout from "@/components/layouts/AdminLayout";
-import { allPosts } from "@/lib/dummyData";
-import PostsList from "@/components/admin/PostsList";
-import UsersList from "@/components/admin/UsersList";
+import AdminLayout from "../../components/layouts/AdminLayout";
+import { allPosts } from "../../lib/dummyData";
+import PostsList from "../../components/admin/PostsList";
+import UsersList from "../../components/admin/UsersList";
 
 const Dashboard = () => {
   const navigate = useNavigate();

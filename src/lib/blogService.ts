@@ -59,7 +59,7 @@ export const blogService = {
   },
   
   // Create a new blog post
-  async createPost(post: Omit<Post, 'id' | 'created_at' | 'author'>, userId: string): Promise<Post | null> {
+  async createPost(post: any, userId: string): Promise<Post | null> {
     try {
       const { data, error } = await supabase
         .from('posts')

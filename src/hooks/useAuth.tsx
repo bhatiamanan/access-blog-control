@@ -44,11 +44,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (!data) return null;
 
+      // Ensure role is either 'admin' or 'user'
+      const role = data.role === 'admin' ? 'admin' : 'user';
+
       return {
         id: data.id,
         name: data.name,
         email: data.email,
-        role: data.role || 'user',
+        role: role,
       };
     } catch (error) {
       console.error('Error in fetchUserProfile:', error);
@@ -74,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 id: userData.user.id,
                 name: userData.user.email?.split('@')[0] || 'User',
                 email: userData.user.email || '',
-                role: 'user',
+                role: 'user' as const, // Explicitly type as 'user'
               };
               
               // Insert new profile

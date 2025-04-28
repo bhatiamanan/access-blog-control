@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -13,27 +13,69 @@ import { Badge } from "@/components/ui/badge";
 import { Edit, Trash2, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
-import { allPosts } from "@/lib/dummyData";
+import { blogService } from "@/lib/blogService";
+import { Post } from "@/lib/supabase";
+import { format } from "date-fns";
 
 const PostsList = () => {
   const navigate = useNavigate();
+  const [posts, setPosts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setIsLoading(true);
+      const data = await blogService.getAllPosts();
+      setPosts(data);
+      setIsLoading(false);
+    };
+    
+    fetchPosts();
+  }, []);
   
   const handleEdit = (id: string) => {
     navigate(`/admin/edit-post/${id}`);
   };
   
-  const handleDelete = (id: string) => {
-    // In a real app, you would call an API to delete the post
-    toast({
-      title: "Post deleted",
-      description: "The post has been deleted successfully.",
-    });
-    // For now we'll just show a toast as we're using mock data
+  const handleDelete = async (id: string) => {
+    const confirmed = window.confirm('Are you sure you want to delete this post?');
+    
+    if (confirmed) {
+      const success = await blogService.deletePost(id);
+      
+      if (success) {
+        // Remove the deleted post from state
+        setPosts(posts.filter(post => post.id !== id));
+      }
+    }
   };
   
   const handleView = (id: string) => {
     navigate(`/blog/${id}`);
   };
+  
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-8">
+        <p>Loading posts...</p>
+      </div>
+    );
+  }
+
+  if (posts.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-500">No posts found.</p>
+        <Button 
+          onClick={() => navigate('/admin/create-post')}
+          variant="outline"
+          className="mt-4"
+        >
+          Create Your First Post
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-md border overflow-hidden">
@@ -48,7 +90,7 @@ const PostsList = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {allPosts.map((post) => (
+          {posts.map((post) => (
             <TableRow key={post.id}>
               <TableCell className="font-medium max-w-[300px] truncate">
                 {post.title}
@@ -60,13 +102,15 @@ const PostsList = () => {
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  {post.author.name}
-                  <Badge variant={post.author.role === "admin" ? "default" : "outline"} className="text-xs">
-                    {post.author.role}
+                  {post.profiles?.name || 'Unknown'}
+                  <Badge variant={post.profiles?.role === "admin" ? "default" : "outline"} className="text-xs">
+                    {post.profiles?.role || 'user'}
                   </Badge>
                 </div>
               </TableCell>
-              <TableCell>{post.createdAt}</TableCell>
+              <TableCell>
+                {post.created_at ? format(new Date(post.created_at), 'MMM d, yyyy') : 'Unknown'}
+              </TableCell>
               <TableCell>
                 <div className="flex gap-2">
                   <Button size="icon" variant="ghost" onClick={() => handleView(post.id)}>

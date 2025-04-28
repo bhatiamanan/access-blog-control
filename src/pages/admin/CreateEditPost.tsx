@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +11,8 @@ import { ArrowLeft, Save } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "@/components/ui/use-toast";
 import AdminLayout from "@/components/layouts/AdminLayout";
-import { allPosts } from "@/lib/dummyData";
+import { useAuth } from "@/hooks/useAuth";
+import { blogService } from "@/lib/blogService";
 
 interface PostFormData {
   title: string;
@@ -23,31 +24,90 @@ interface PostFormData {
 const CreateEditPost = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const isEditMode = !!id;
+  const [isLoading, setIsLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(isEditMode);
   
-  // Find post if in edit mode
-  const post = isEditMode ? allPosts.find(post => post.id === id) : null;
+  const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm<PostFormData>();
   
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<PostFormData>({
-    defaultValues: {
-      title: post?.title || "",
-      excerpt: post?.excerpt || "",
-      content: "", // In a real app, you would fetch the full content
-      category: post?.category || "",
-    },
-  });
-  
-  const onSubmit = (data: PostFormData) => {
-    // In a real app, you would call an API to save the post
-    console.log("Form data:", data);
+  // Fetch post data if in edit mode
+  useEffect(() => {
+    const fetchPost = async () => {
+      if (isEditMode && id) {
+        try {
+          const post = await blogService.getPostById(id);
+          
+          if (post) {
+            reset({
+              title: post.title,
+              excerpt: post.excerpt,
+              content: post.content,
+              category: post.category,
+            });
+          } else {
+            toast({
+              title: "Error",
+              description: "Post not found",
+              variant: "destructive",
+            });
+            navigate("/admin/dashboard");
+          }
+        } catch (error) {
+          console.error("Error fetching post:", error);
+          toast({
+            title: "Error",
+            description: "Failed to load the post",
+            variant: "destructive",
+          });
+          navigate("/admin/dashboard");
+        } finally {
+          setInitialLoading(false);
+        }
+      } else {
+        setInitialLoading(false);
+      }
+    };
     
-    toast({
-      title: isEditMode ? "Post updated" : "Post created",
-      description: isEditMode ? "The post has been updated successfully." : "The post has been created successfully.",
-    });
+    fetchPost();
+  }, [id, isEditMode, navigate, reset]);
+  
+  const onSubmit = async (data: PostFormData) => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create or edit posts",
+        variant: "destructive",
+      });
+      return;
+    }
     
-    navigate("/admin/dashboard");
+    setIsLoading(true);
+    
+    try {
+      if (isEditMode && id) {
+        await blogService.updatePost(id, data);
+      } else {
+        await blogService.createPost(data, user.id);
+      }
+      
+      navigate("/admin/dashboard");
+    } catch (error) {
+      console.error("Error saving post:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
+  
+  if (initialLoading) {
+    return (
+      <AdminLayout>
+        <div className="flex justify-center items-center min-h-[60vh]">
+          <p className="text-xl">Loading post data...</p>
+        </div>
+      </AdminLayout>
+    );
+  }
   
   return (
     <AdminLayout>
@@ -114,7 +174,7 @@ const CreateEditPost = () => {
               <Label htmlFor="category">Category</Label>
               <Select
                 onValueChange={(value) => setValue("category", value)}
-                defaultValue={post?.category}
+                defaultValue=""
               >
                 <SelectTrigger id="category">
                   <SelectValue placeholder="Select a category" />
@@ -134,9 +194,11 @@ const CreateEditPost = () => {
             </div>
             
             <div className="flex justify-end">
-              <Button type="submit">
+              <Button type="submit" disabled={isLoading}>
                 <Save className="mr-2 h-4 w-4" />
-                {isEditMode ? "Update Post" : "Create Post"}
+                {isLoading 
+                  ? isEditMode ? "Updating Post..." : "Creating Post..." 
+                  : isEditMode ? "Update Post" : "Create Post"}
               </Button>
             </div>
           </form>

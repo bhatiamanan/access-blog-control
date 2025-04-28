@@ -1,8 +1,7 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface User {
@@ -28,7 +27,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
-  // Function to get user details from Supabase profiles
   const fetchUserProfile = async (userId: string): Promise<User | null> => {
     try {
       const { data, error } = await supabase
@@ -44,7 +42,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (!data) return null;
 
-      // Ensure role is either 'admin' or 'user'
       const role = data.role === 'admin' ? 'admin' : 'user';
 
       return {
@@ -59,7 +56,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Set up auth state listener
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -70,17 +66,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (profile) {
             setUser(profile);
           } else {
-            // If no profile exists yet, create one with default role 'user'
             const { data: userData } = await supabase.auth.getUser();
             if (userData?.user) {
               const newProfile = {
                 id: userData.user.id,
                 name: userData.user.email?.split('@')[0] || 'User',
                 email: userData.user.email || '',
-                role: 'user' as const, // Explicitly type as 'user'
+                role: 'user' as const,
               };
               
-              // Insert new profile
               await supabase.from('profiles').insert([
                 {
                   id: newProfile.id,
@@ -101,7 +95,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // Initial session check
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
@@ -143,7 +136,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             description: `Welcome back, ${profile.name}!`,
           });
           
-          // Redirect based on role
           if (profile.role === "admin") {
             navigate("/admin/dashboard");
           } else {
@@ -166,7 +158,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setIsLoading(true);
       
-      // Sign up the user
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -175,7 +166,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) throw error;
       
       if (data.user) {
-        // Create a profile with default role 'user'
         const { error: profileError } = await supabase
           .from('profiles')
           .insert([

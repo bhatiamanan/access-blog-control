@@ -1,24 +1,8 @@
 
-import { createClient } from '@supabase/supabase-js';
+// Import the supabase client from the Lovable integration
+import { supabase } from '@/integrations/supabase/client';
 
-// Get Supabase URL and anon key from Lovable's Supabase integration
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-// Create Supabase client with fallback values for development
-const fallbackUrl = 'https://placeholder-url.supabase.co';
-const fallbackKey = 'placeholder-key';
-
-// Create and export Supabase client
-const supabase = createClient(
-  supabaseUrl || fallbackUrl,
-  supabaseAnonKey || fallbackKey
-);
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Supabase environment variables are missing. Make sure you have connected your project to Supabase through Lovable\'s integration.');
-}
-
+// Re-export the supabase client
 export { supabase };
 
 // Types for our database tables
